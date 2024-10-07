@@ -40,3 +40,20 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          
+# Step: Run Trivy vulnerability scan
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: kangbh/edu1:${{ github.event.inputs.name }}
+          format: 'table'                  # Scan result will be shown as table
+          exit-code: '1'                   # Fail the workflow if vulnerabilities are found
+          ignore-unfixed: true             # Ignore unfixed vulnerabilities (optional)
+          vuln-type: 'os,library'          # Scan both OS and library vulnerabilities
+          severity: 'HIGH,CRITICAL'        # Only show HIGH and CRITICAL severity vulnerabilities
+
+      # Optional step: Notify on vulnerability detection
+      - name: Post vulnerability status
+        if: failure()
+        run: echo "Security vulnerabilities detected in Docker image"
+
